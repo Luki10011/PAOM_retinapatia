@@ -75,12 +75,19 @@ In order to download the dataset, you need to create an account at Kaggle. This 
 
 After creating an account and accepting the rules of copetition, remember to set your environment variable **KAGGLE_API_TOKEN** to the value of your personal API Key:
 * Windows (PowerShell)
-    > $env:KAGGLE_API_TOKEN = "<YOUR_API_TOKEN>"
+    ```
+    $env:KAGGLE_API_TOKEN = "<YOUR_API_TOKEN>"
+    ```
 * Linux
-    > export KAGGLE_API_TOKEN = <YOUR_API_TOKEN>
-
+    ```
+    export KAGGLE_API_TOKEN = <YOUR_API_TOKEN>
+    ```
 In order to check if everything is set up correctly run this command:
->  kaggle competitions list
+```
+kaggle competitions list
+```
 
 To download the datset use the command below:
-> python .\src\utils\data_preprocessor.py
+```
+python .\src\utils\data_preprocessor.py
+```
