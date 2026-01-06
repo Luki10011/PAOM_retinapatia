@@ -49,6 +49,8 @@ The dataset consists of thousands of **fundus (retinal) images** taken under var
 | **4. Activate virtual environment** | `.venv\Scripts\Activate.ps1` | `source .venv/bin/activate` |
 | **5. Install dependencies** | `pip install -r requirements.txt` | `pip install -r requirements.txt` |
 
+Remember to install [pytorch](https://pytorch.org/get-started/locally/).
+
 ## Project structure
 
 ```text
