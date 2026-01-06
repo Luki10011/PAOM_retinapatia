@@ -2,6 +2,7 @@
 ####==== git ignore for project structure ===####
 /.venv/
 /data/
+/.kaggle/
 
 
 ####==== git ignore for Python bytecode files ===####
