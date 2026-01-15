@@ -62,8 +62,8 @@ class RDDatamodule(LightningDataModule):
             CLAHETransform(),
             transforms.ToTensor(),
             transforms.RandomHorizontalFlip(p=0.5),      # losowe odbicie poziome
-            transforms.RandomVerticalFlip(p=0.5)
-            # transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
+            transforms.RandomVerticalFlip(p=0.5),
+            transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
         ])
 
         self.val_test_transform = transforms.Compose([
@@ -71,7 +71,7 @@ class RDDatamodule(LightningDataModule):
             transforms.Resize((224, 224)),
             CLAHETransform(),
             transforms.ToTensor(),
-            # transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
+            transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
         ])
 
     def _print_class_distribution(self, name: str, samples: list[tuple[Path, int]]):

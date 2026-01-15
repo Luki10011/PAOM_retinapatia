@@ -20,27 +20,26 @@ class CLAHETransform:
     
 class CropTransform:
     def crop_image_from_gray(self, img, tol=7):
-        if img.ndim == 2:
-            mask = img > tol
-            return img[np.ix_(mask.any(1), mask.any(0))]
-        elif img.ndim == 3:
-            gray_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-            mask = gray_img > tol
-            check_shape = img[:,:,0][np.ix_(mask.any(1), mask.any(0))].shape[0]
-            if (check_shape == 0): # image is too dark so that we crop out everything,
-                return img # return original image
-            else:
-                img1 = img[:,:,0][np.ix_(mask.any(1), mask.any(0))]
-                img2 = img[:,:,1][np.ix_(mask.any(1), mask.any(0))]
-                img3 = img[:,:,2][np.ix_(mask.any(1), mask.any(0))]
-                img = np.stack([img1, img2, img3], axis=-1)
-            return img
+        gray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
+        mask = gray > 30
+        coords = np.argwhere(mask)
+        y0, x0 = coords.min(axis = 0)
+        y1, x1 = coords.max(axis = 0)
+        cropped = img[y0:y1, x0:x1]
+        return cropped
 
     def __call__(self, img: Image.Image):
         img = np.array(img)
         img = self.crop_image_from_gray(img)
-        img = Image.fromarray(img)
-
-        return img
+        return Image.fromarray(img)
     
-
+class ResizeTransform:
+    def smart_resize(img, size=(1024,1024)):
+        h, w = img.shape[:2]
+        if h > size[0] and w > size[1]:
+            interp = cv2.INTER_AREA
+        elif h < size[0] and w < size[1]:
+            interp = cv2.INTER_CUBIC
+        else:
+            interp = cv2.INTER_LINEAR
+        return cv2.resize(img, size, interpolation = interp)

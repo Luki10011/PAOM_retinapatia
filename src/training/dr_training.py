@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
 
     trainer = Trainer(
-        max_epochs=30,
+        max_epochs=100,
         accelerator="auto",
         devices="auto",
         callbacks=[checkpoint_callback],

@@ -106,9 +106,12 @@ class RGBResNet(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(64*3, 128),
             nn.ReLU(),
+            nn.Dropout(0.5),
             nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(64, num_classes)
+            nn.Dropout(0.5),
+            nn.Linear(64, num_classes),
+            nn.Dropout(0.5)
         )
 
     def _make_path(self):
@@ -150,7 +153,7 @@ class DRLightning(LightningModule):
 
         self.save_hyperparameters()
 
-        self.model = DeepCNN(num_classes=num_classes)
+        self.model = RGBResNet(num_classes=num_classes)
 
         self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
         self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
