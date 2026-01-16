@@ -5,4 +5,6 @@ pandas
 pytorch-lightning
 scikit-learn
 scipy
-torchmetric
+torchmetrics
+matplotlib
+captum
