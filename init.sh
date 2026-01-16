@@ -49,5 +49,3 @@ else
 fi
 
 $INSTALLER install -r requirements.txt 
-
-kaggle competitions download -c aptos2019-blindness-detection

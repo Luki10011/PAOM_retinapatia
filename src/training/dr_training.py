@@ -16,8 +16,6 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Urządzenie:", device)
 
-    
-
     model = DRLightning(learning_rate = 1e-4) 
         
     checkpoint_callback = ModelCheckpoint(
@@ -30,7 +28,7 @@ if __name__ == "__main__":
 
 
     trainer = Trainer(
-        max_epochs=30,
+        max_epochs=200,
         accelerator="auto",
         devices="auto",
         callbacks=[checkpoint_callback],
