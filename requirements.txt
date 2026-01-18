@@ -8,3 +8,4 @@ scipy
 torchmetrics
 matplotlib
 captum
+lightning[extra]
