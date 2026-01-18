@@ -201,35 +201,35 @@ class DRLightning(LightningModule):
         self.log('test_acc', self.test_acc, prog_bar=True)
         self.log('test_f1', self.test_f1, prog_bar=True)
 
-def configure_optimizers(self):
-    backbone_params = []
-    head_params = []
+    def configure_optimizers(self):
+        backbone_params = []
+        head_params = []
 
-    for name, param in self.model.named_parameters():
-        if not param.requires_grad:
-            continue
-        if "classifier" in name or "fc" in name:
-            head_params.append(param)
-        else:
-            backbone_params.append(param)
+        for name, param in self.model.named_parameters():
+            if not param.requires_grad:
+                continue
+            if "classifier" in name or "fc" in name:
+                head_params.append(param)
+            else:
+                backbone_params.append(param)
 
-    optimizer = torch.optim.AdamW(
-        [
-            {"params": backbone_params, "lr": 1e-4},
-            {"params": head_params, "lr": 1e-3},
-        ],
-        weight_decay=1e-4,
-    )
+        optimizer = torch.optim.AdamW(
+            [
+                {"params": backbone_params, "lr": 1e-4},
+                {"params": head_params, "lr": 1e-3},
+            ],
+            weight_decay=1e-4,
+        )
 
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="min",
-        factor=0.5,
-        patience=3,
-    )
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer,
+            mode="min",
+            factor=0.5,
+            patience=3,
+        )
 
-    return {
-        "optimizer": optimizer,
-        "lr_scheduler": scheduler,
-        "monitor": "val_loss",
-    }
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler,
+            "monitor": "val_loss",
+        }
