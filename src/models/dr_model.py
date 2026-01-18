@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 import torchmetrics
+from torchmetrics import F1Score
 
 # --------------------------
 # Blok rezydualny
@@ -141,16 +142,24 @@ class RGBResNet(nn.Module):
         return out
 
 class DRLightning(LightningModule):
-    def __init__(self, in_channels=3, num_classes=5, learning_rate=1e-3, img_size=224):
+    def __init__(self, in_channels=3, num_classes=5, learning_rate=1e-3, img_size=224, model=None):
         super().__init__()
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.learning_rate = learning_rate
         self.img_size = img_size
 
+        self.train_f1 = F1Score(task="multiclass", num_classes=num_classes, average="macro")
+        self.val_f1 = F1Score(task="multiclass", num_classes=num_classes, average="macro")
+        self.test_f1 = F1Score(task="multiclass", num_classes=num_classes, average="macro")
+
+
         self.save_hyperparameters()
 
-        self.model = DeepCNN(num_classes=num_classes)
+        if model is not None:
+            self.model = model
+        else:
+            raise ValueError("`model` must be provided and cannot be None.")
 
         self.train_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
         self.val_acc = torchmetrics.Accuracy(task="multiclass", num_classes=num_classes)
@@ -167,7 +176,9 @@ class DRLightning(LightningModule):
         loss = self.criterion(logits, y)
         self.log('train_loss', loss, prog_bar=True)
         self.train_acc(logits.softmax(dim=-1), y)
+        self.train_f1(logits.softmax(dim=-1), y)
         self.log('train_acc', self.train_acc, prog_bar=True)
+        self.log('train_f1', self.train_f1, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -176,7 +187,9 @@ class DRLightning(LightningModule):
         loss = self.criterion(logits, y)
         self.log('val_loss', loss, prog_bar=True)
         self.val_acc(logits.softmax(dim=-1), y)
+        self.val_f1(logits.softmax(dim=-1), y)
         self.log('val_acc', self.val_acc, prog_bar=True)
+        self.log('val_f1', self.val_f1, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         x, y = batch
@@ -184,13 +197,39 @@ class DRLightning(LightningModule):
         loss = self.criterion(logits, y)
         self.log('test_loss', loss, prog_bar=True)
         self.test_acc(logits.softmax(dim=-1), y)
+        self.test_f1(logits.softmax(dim=-1), y)
         self.log('test_acc', self.test_acc, prog_bar=True)
+        self.log('test_f1', self.test_f1, prog_bar=True)
 
-    def configure_optimizers(self):
-        opt = torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate) # type: ignore
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(opt, mode='min', factor=0.5, patience=5)
-        return {
-                'optimizer': opt,
-                'lr_scheduler': scheduler,
-                'monitor': 'train_loss'
-                }
+def configure_optimizers(self):
+    backbone_params = []
+    head_params = []
+
+    for name, param in self.model.named_parameters():
+        if not param.requires_grad:
+            continue
+        if "classifier" in name or "fc" in name:
+            head_params.append(param)
+        else:
+            backbone_params.append(param)
+
+    optimizer = torch.optim.AdamW(
+        [
+            {"params": backbone_params, "lr": 1e-4},
+            {"params": head_params, "lr": 1e-3},
+        ],
+        weight_decay=1e-4,
+    )
+
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer,
+        mode="min",
+        factor=0.5,
+        patience=3,
+    )
+
+    return {
+        "optimizer": optimizer,
+        "lr_scheduler": scheduler,
+        "monitor": "val_loss",
+    }
