@@ -9,7 +9,10 @@ from collections import Counter
 import numpy as np
 from pathlib import Path
 import cv2
-import sys 
+import sys
+
+IMAGENET_MEAN = [0.485, 0.456, 0.406]
+IMAGENET_STD  = [0.229, 0.224, 0.225]
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
@@ -62,7 +65,8 @@ class RDDatamodule(LightningDataModule):
             CLAHETransform(),
             transforms.ToTensor(),
             transforms.RandomHorizontalFlip(p=0.5),      # losowe odbicie poziome
-            transforms.RandomVerticalFlip(p=0.5)
+            transforms.RandomVerticalFlip(p=0.5),
+            transforms.Normalize(IMAGENET_MEAN, IMAGENET_STD)
             # transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
         ])
 
