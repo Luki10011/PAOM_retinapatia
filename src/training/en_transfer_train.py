@@ -44,11 +44,19 @@ if __name__ == "__main__":
         mode="min",
     )
 
+    early_stopping_callback = EarlyStopping(
+        monitor="val_loss",
+        patience=15,
+        mode="min",
+        verbose=True,
+    )
+
+
     trainer = Trainer(
         max_epochs=10,
         accelerator="auto",
         devices="auto",
-        callbacks=[checkpoint_callback],
+        callbacks=[checkpoint_callback, early_stopping_callback],
         log_every_n_steps=10,
     )
 
@@ -72,7 +80,7 @@ if __name__ == "__main__":
         max_epochs=200,
         accelerator="auto",
         devices="auto",
-        callbacks=[checkpoint_callback_ft],
+        callbacks=[checkpoint_callback, early_stopping_callback],
         log_every_n_steps=10,
     )
 
