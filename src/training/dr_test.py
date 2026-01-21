@@ -12,6 +12,11 @@ from src.datamodules.dr_module import RDDatamodule
 
 if __name__ == "__main__":
     best_model = DRLightning.load_from_checkpoint(
-        checkpoint_path=r"C:\PAOM\PAOM_retinapatia\checkpoints\best-epoch=20-val_acc=0.786.ckpt"
+        checkpoint_path=r"C:\PAOM\PAOM_retinapatia\checkpoints\best-epoch=38-val_acc=0.738.ckpt"
     )
-    print(1)
+    datamodule = RDDatamodule()
+    datamodule.setup()
+
+    best_model.eval()
+    trainer = Trainer(accelerator="auto", devices="auto")
+    trainer.test(best_model, datamodule=datamodule)

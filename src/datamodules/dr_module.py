@@ -9,6 +9,7 @@ from collections import Counter
 import numpy as np
 from pathlib import Path
 import cv2
+from torch.utils.data import WeightedRandomSampler
 import sys 
 
 sys.path.append(str(Path(__file__).resolve().parents[1]))
@@ -61,7 +62,7 @@ class RDDatamodule(LightningDataModule):
             transforms.Resize((224, 224)),
             CLAHETransform(),
             transforms.ToTensor(),
-            transforms.RandomHorizontalFlip(p=0.5),      # losowe odbicie poziome
+            transforms.RandomHorizontalFlip(p=0.5),      
             transforms.RandomVerticalFlip(p=0.5),
             transforms.Normalize(mean=[0.5,0.5,0.5], std=[0.5,0.5,0.5])
         ])
@@ -111,11 +112,28 @@ class RDDatamodule(LightningDataModule):
 
         print(f"\nTotal samples\n Train: {len(train_samples)} | Val: {len(val_samples)} | Test: {len(test_samples)}")
 
+        # ---- WeightedRandomSampler ----
+        train_labels = [label for _, label in train_samples]
+        class_counts = Counter(train_labels)
+
+        # waga klasy = 1 / liczność
+        class_weights = {cls: 1.0 / count for cls, count in class_counts.items()}
+
+        # waga każdej próbki
+        sample_weights = [class_weights[label] for label in train_labels]
+
+        self.train_sampler = WeightedRandomSampler(
+            weights=sample_weights,
+            num_samples=len(sample_weights),
+            replacement=True
+        )
+
     def train_dataloader(self):
         return DataLoader(
             self.train_dataset,
             batch_size=self.batch_size,
-            shuffle=True,
+            sampler=self.train_sampler,   
+            shuffle=False,                
             num_workers=self.num_workers,
             pin_memory=True,
             persistent_workers=True
@@ -184,6 +202,34 @@ def test_datamodule():
     # jak sobie rzucicie okiem na skałodwe RGB to najwięcej informacje jest w kanale G i B, w kanale R jest mniej informacji
     # o żyłkach siatkówki
 
+def showTransforms():
+    img_path = Path("./data/processed/0/0cecc2864b7f.png")
+    image = Image.open(img_path).convert("RGB")
+
+    crop_transform = CropTransform()
+    clahe_transform = CLAHETransform()
+
+    cropped_img = crop_transform(image)
+    clahe_img = clahe_transform(cropped_img)
+
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+
+    axes[0].imshow(image)
+    axes[0].set_title("Original Image")
+    axes[0].axis("off")
+
+    axes[1].imshow(cropped_img)
+    axes[1].set_title("Cropped Image")
+    axes[1].axis("off")
+
+    axes[2].imshow(clahe_img)
+    axes[2].set_title("CLAHE Enhanced Image")
+    axes[2].axis("off")
+
+    plt.tight_layout()
+    plt.show()
+
 if __name__ == "__main__":
-    test_datamodule()
+    # test_datamodule()
+    showTransforms()
     

@@ -3,6 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_lightning import LightningModule
 import torchmetrics
+from torch.utils.tensorboard import SummaryWriter
+
 
 # --------------------------
 # Blok rezydualny
@@ -197,3 +199,22 @@ class DRLightning(LightningModule):
                 'lr_scheduler': scheduler,
                 'monitor': 'train_loss'
                 }
+    
+
+def visualize_model():
+    model = DeepCNN(num_classes=5)
+    model.eval()
+    print(model)
+    # Dummy input: (batch, channels, H, W)
+    dummy_input = torch.randn(1, 3, 224, 224)
+
+    writer = SummaryWriter(log_dir="runs/RGBResNet")
+
+    # Najważniejsza linia
+    writer.add_graph(model, dummy_input)
+
+    writer.close()
+    print("Graf zapisany. Uruchom TensorBoard.")
+
+if __name__ == "__main__":
+    visualize_model()

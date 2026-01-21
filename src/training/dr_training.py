@@ -23,7 +23,7 @@ if __name__ == "__main__":
     checkpoint_callback = ModelCheckpoint(
         monitor="val_loss",       # monitorujemy stratę walidacyjną
         dirpath="./checkpoints",  # folder na checkpointy
-        filename="best-{epoch:02d}-{val_acc:.3f}",
+        filename="best_rgb_res-{epoch:02d}-{val_acc:.3f}",
         save_top_k=1,             # zapisujemy tylko najlepszy model
         mode="min"                # minimalizujemy val_loss
     )
