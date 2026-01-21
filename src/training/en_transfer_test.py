@@ -7,14 +7,14 @@ import torch
 from pytorch_lightning import Trainer
 
 from datamodules.dr_module import RDDatamodule
-from models.dr_model import DRLightning
+from models.dr_model import DRLightning, DeepCNN
 
 
 def main():
     # -------------------------
     # Paths
     # -------------------------
-    CHECKPOINT_PATH = Path("../../training_18012026/best-finetuned-epoch=03-val_acc=0.768.ckpt")
+    CHECKPOINT_PATH = Path("training_16012026/checkpoints/best-epoch=74-val_acc=0.786.ckpt")
 
     OUTPUT_FILE = Path("./test_metrics.txt")
 
@@ -32,6 +32,8 @@ def main():
     model = DRLightning.load_from_checkpoint(
         checkpoint_path=str(CHECKPOINT_PATH),
         map_location="cuda" if torch.cuda.is_available() else "cpu",
+        weights_only=False,
+        model=DeepCNN()
     )
 
     model.eval()
